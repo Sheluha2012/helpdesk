@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./src/public",
+    "rootDir": "./src/public"
+  },
+  "include": ["src/public/script.ts"]
+}

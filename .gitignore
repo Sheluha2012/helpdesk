@@ -1,0 +1,27 @@
+# Зависимости (сервер и клиент)
+node_modules/
+client/node_modules/
+
+# Результаты сборки
+dist/
+client/dist/
+*.tsbuildinfo
+
+# Загруженные пользователями файлы
+uploads/*
+!uploads/.gitkeep
+
+# Переменные окружения
+.env
+.env.*
+
+# Логи
+*.log
+npm-debug.log*
+
+# Файлы ОС и редакторов
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
