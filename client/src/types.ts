@@ -12,3 +12,8 @@ export interface Ticket {
     deadline?: string;
     file?: string;
 }
+
+export interface AuthUser {
+    id: number;
+    login: string;
+}

@@ -1,3 +1,7 @@
+import "dotenv/config";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth";
+import { requireAuth } from "./middleware/auth";
 import express, { Request, Response } from "express";
 import path from "path";
 import multer from "multer";
@@ -14,7 +18,12 @@ const CATEGORIES = [
 ];
 
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use(cookieParser());
+
+app.use("/api/auth", authRouter);
+
+app.use("/api/tickets", requireAuth);
+app.use("/uploads", requireAuth, express.static(path.join(__dirname, "../uploads")));
 
 const upload = multer({
     storage: multer.diskStorage({

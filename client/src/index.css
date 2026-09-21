@@ -25,3 +25,9 @@ button.danger { background: #dc2626; }
 .error { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; }
 .empty { color: #6b7280; }
 @media (max-width: 700px) { .filter-form { grid-template-columns: 1fr; } }
+.app-header { display: flex; justify-content: space-between; align-items: center; }
+.user-box { display: flex; align-items: center; gap: 12px; }
+.user-box button { background: #fff; color: #1d4ed8; }
+.login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.login-card { width: 100%; max-width: 380px; margin-bottom: 0; }
+.notice { background: #fef3c7; color: #92400e; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; }

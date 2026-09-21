@@ -1,86 +1,48 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Ticket, TicketStatus } from "./types";
-import { getTickets, createTicket, updateTicket, deleteTicket } from "./api";
-import type { Filters } from "./api";
-import TicketForm from "./components/TicketForm";
-import FilterBar from "./components/FilterBar";
-import TicketCard from "./components/TicketCard";
+import { useEffect, useState } from "react";
+import type { AuthUser } from "./types";
+import { getMe, logout, setUnauthorizedHandler } from "./api";
+import LoginForm from "./components/LoginForm";
+import Helpdesk from "./components/Helpdesk";
 
 export default function App() {
-    const [tickets, setTickets] = useState<Ticket[]>([]);
-    const [filters, setFilters] = useState<Filters>({ status: "", priority: "" });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const load = useCallback(async () => {
-        try {
-            setTickets(await getTickets(filters));
-            setError(null);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка загрузки");
-        } finally {
-            setLoading(false);
-        }
-    }, [filters]);
+    const [user, setUser] = useState<AuthUser | null>(null);
+    const [checking, setChecking] = useState(true);
+    const [expired, setExpired] = useState(false);
 
     useEffect(() => {
-        load();
-    }, [load]);
+        setUnauthorizedHandler(() => {
+            setUser(null);
+            setExpired(true);
+        });
 
-    async function run(action: () => Promise<unknown>) {
+        getMe()
+            .then(setUser)
+            .catch(() => setUser(null))
+            .finally(() => setChecking(false));
+    }, []);
+
+    async function handleLogout() {
         try {
-            await action();
-            await load();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка");
+            await logout();
+        } finally {
+            setUser(null);
+            setExpired(false);
         }
     }
 
-    return (
-        <>
-            <header>
-                <h1>Helpdesk</h1>
-                <p>Система заявок в техническую поддержку</p>
-            </header>
+    if (checking) return <p className="empty">Загрузка...</p>;
 
-            <main>
-                {error && <div className="error">{error}</div>}
+    if (!user) {
+        return (
+            <LoginForm
+                notice={expired ? "Сессия истекла. Войдите снова." : undefined}
+                onLogin={u => {
+                    setUser(u);
+                    setExpired(false);
+                }}
+            />
+        );
+    }
 
-                <section className="card">
-                    <h2>Создать заявку</h2>
-                    <TicketForm
-                        onCreate={async data => {
-                            await createTicket(data);
-                            await load();
-                        }}
-                    />
-                </section>
-
-                <section className="card">
-                    <h2>Фильтрация заявок</h2>
-                    <FilterBar filters={filters} onChange={setFilters} />
-                </section>
-
-                <section className="card">
-                    <h2>Заявки ({tickets.length})</h2>
-                    {loading && <p>Загрузка...</p>}
-                    {!loading && tickets.length === 0 && (
-                        <p className="empty">Заявок по выбранным фильтрам нет.</p>
-                    )}
-                    <div className="tickets">
-                        {tickets.map(ticket => (
-                            <TicketCard
-                                key={ticket.id}
-                                ticket={ticket}
-                                onStatusChange={(status: TicketStatus) =>
-                                    run(() => updateTicket(ticket.id, { status }))
-                                }
-                                onDelete={() => run(() => deleteTicket(ticket.id))}
-                            />
-                        ))}
-                    </div>
-                </section>
-            </main>
-        </>
-    );
+    return <Helpdesk user={user} onLogout={handleLogout} />;
 }

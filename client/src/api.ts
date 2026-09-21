@@ -1,7 +1,16 @@
-import type { Ticket, TicketStatus, TicketPriority } from "./types";
+import type { Ticket, TicketStatus, TicketPriority, AuthUser } from "./types";
+
+let onUnauthorized: (() => void) | null = null;
+export function setUnauthorizedHandler(handler: () => void) {
+    onUnauthorized = handler;
+}
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, init);
+
+    if (res.status === 401 && !url.startsWith("/api/auth/")) {
+        onUnauthorized?.();
+    }
 
     if (!res.ok) {
         let message = `Ошибка ${res.status}`;
@@ -16,6 +25,22 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
     if (res.status === 204) return undefined as T;
     return res.json() as Promise<T>;
+}
+
+export function login(loginName: string, password: string): Promise<AuthUser> {
+    return request<AuthUser>("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: loginName, password })
+    });
+}
+
+export function logout(): Promise<void> {
+    return request<void>("/api/auth/logout", { method: "POST" });
+}
+
+export function getMe(): Promise<AuthUser> {
+    return request<AuthUser>("/api/auth/me");
 }
 
 export interface Filters {
